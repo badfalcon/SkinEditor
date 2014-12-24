@@ -313,11 +313,16 @@ public class Canvas extends JPanel implements ComponentListener {
 		glayer1.drawImage(selectedImage, select.x, select.y, this);
 
 		if (release) {
-			Graphics2D gsource = SkinEditor.source.createGraphics();
-			gsource.drawImage(selectedImage, select.x, select.y, this);
-			gsource.dispose();
+
+			BufferedImage change = deepCopy(SkinEditor.source);
+			Graphics2D gchange = change.createGraphics();
+			gchange.drawImage(selectedImage, select.x, select.y, this);
+			gchange.dispose();
 			selectedImage = new BufferedImage(64, 64,
 					BufferedImage.TYPE_INT_ARGB_PRE);
+
+			updateUndo(change);
+
 			SkinEditor.editItemList[2].setEnabled(false);
 			SkinEditor.editItemList[3].setEnabled(false);
 			release = false;
@@ -868,7 +873,7 @@ public class Canvas extends JPanel implements ComponentListener {
 
 			if (!grabbing) {
 				// changes
-				updateUndo(SkinEditor.source, layer1);
+				updateUndo(layer1);
 			}
 
 			repaint();
@@ -934,21 +939,48 @@ public class Canvas extends JPanel implements ComponentListener {
 		}
 	}
 
-	public void updateUndo(BufferedImage before, BufferedImage after) {
+	public Changes getChangesA(BufferedImage a) {
+		ArrayList<unit> unitsb = new ArrayList<unit>();
+		ArrayList<unit> unitsa = new ArrayList<unit>();
+		for (int i = 0; i < 64; i++) {
+			for (int j = 0; j < 64; j++) {
+				int rgbold = SkinEditor.source.getRGB(j, i);
+				int rgbnew = a.getRGB(j, i);
+				// U.say("old" + rgbold + ":new" + rgbnew);
+				if (rgbold != rgbnew) {
+					unitsb.add(new unit(j, i, rgbold));
+					unitsa.add(new unit(j, i, rgbnew));
+				}
+			}
+		}
+		return new Changes(unitsb, unitsa);
+	}
+
+	public class Changes {
 		ArrayList<unit> unitsold = new ArrayList<unit>();
 		ArrayList<unit> unitsnew = new ArrayList<unit>();
 
-		getChanges(before, after, unitsold, unitsnew);
-		if (!unitsold.equals(unitsnew)) {
-			U.say("changed");
-			before = deepCopy(after);
+		public Changes(ArrayList<unit> unitsb, ArrayList<unit> unitsa) {
+			unitsold = unitsb;
+			unitsnew = unitsa;
+		}
+	}
+
+	public void updateUndo(BufferedImage after) {
+
+		Changes change = getChangesA(after);
+		if (change.unitsnew.size() != 0) {
+			SkinEditor.source = deepCopy(after);
 			editNum++;
-			undoManager.undoableEditHappened(new UndoableEditEvent(this,
-					new SetValueUndo(unitsold, unitsnew, editNum)));
+			undoManager
+					.undoableEditHappened(new UndoableEditEvent(this,
+							new SetValueUndo(change.unitsold, change.unitsnew,
+									editNum)));
 			SkinEditor.edited = true;
 			SkinEditor.updateTitle();
 
 			changed = true;
+		} else {
 		}
 		SkinEditor.editItemList[0].setEnabled(undoManager.canUndo());
 		SkinEditor.editItemList[1].setEnabled(undoManager.canRedo());
@@ -1146,12 +1178,10 @@ public class Canvas extends JPanel implements ComponentListener {
 				clearRect(change, select.x, select.y, select.width,
 						select.height);
 			}
-			updateUndo(SkinEditor.source, change);
+			updateUndo(change);
 		}
-		BufferedImage[] im = new BufferedImage[] { SkinEditor.source, change };
-		new Check(im);
 		SkinEditor.editItemList[4].setEnabled(true);
-		changed = true;
+		// changed = true;
 	}
 
 	public void paste() {

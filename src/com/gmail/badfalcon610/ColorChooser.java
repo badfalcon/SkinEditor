@@ -39,7 +39,7 @@ public class ColorChooser extends JPanel implements ActionListener {
 	private Color colorsub;
 
 	static JLayeredPane preview;
-	
+
 	private static MainPreview ppanelmain;
 	private static MainPreview ppanelsub;
 	private HistoryPanel historypanel;
@@ -49,6 +49,8 @@ public class ColorChooser extends JPanel implements ActionListener {
 	private JTabbedPane tabbedPane;
 
 	private static HSBPanel hsb;
+	private static RGBSlider rgb;
+	private static RGBPanel rgbpanel;
 
 	public ColorChooser() {
 		try {
@@ -72,16 +74,20 @@ public class ColorChooser extends JPanel implements ActionListener {
 		add(tabbedPane);
 
 		hsb = new HSBPanel();
+		rgb = new RGBSlider();
+		rgbpanel = new RGBPanel();
 
 		tabbedPane.addTab("HSB", null, hsb, null);
+		tabbedPane.addTab("RGBPanel", null, rgbpanel, null);
+		tabbedPane.addTab("RGBSlider", null, rgb, null);
 
-		//		JPanel Sample = new JPanel();
-		//		tabbedPane.addTab("Sample", null, Sample, null);
+		// JPanel Sample = new JPanel();
+		// tabbedPane.addTab("Sample", null, Sample, null);
 
 		preview = new JLayeredPane();
 		SpringLayout layout = new SpringLayout();
 		preview.setLayout(layout);
-		//preview.setLayout(new GridLayout(0, 3, 10, 10));
+		// preview.setLayout(new GridLayout(0, 3, 10, 10));
 
 		ppanelmain = new MainPreview(colormain, 60, 60);
 
@@ -94,35 +100,44 @@ public class ColorChooser extends JPanel implements ActionListener {
 		exchangebutton.addActionListener(this);
 		historypanel = new HistoryPanel(5, 2);
 
-		layout.putConstraint(SpringLayout.NORTH, ppanelmain, 0, SpringLayout.NORTH, tabbedPane);
-		layout.putConstraint(SpringLayout.WEST, ppanelmain, 0, SpringLayout.WEST, preview);
+		layout.putConstraint(SpringLayout.NORTH, ppanelmain, 0,
+				SpringLayout.NORTH, tabbedPane);
+		layout.putConstraint(SpringLayout.WEST, ppanelmain, 0,
+				SpringLayout.WEST, preview);
 
-		layout.putConstraint(SpringLayout.NORTH, ppanelsub, -30, SpringLayout.SOUTH, ppanelmain);
-		layout.putConstraint(SpringLayout.WEST, ppanelsub, -30, SpringLayout.EAST, ppanelmain);
+		layout.putConstraint(SpringLayout.NORTH, ppanelsub, -30,
+				SpringLayout.SOUTH, ppanelmain);
+		layout.putConstraint(SpringLayout.WEST, ppanelsub, -30,
+				SpringLayout.EAST, ppanelmain);
 
-		layout.putConstraint(SpringLayout.NORTH, exchangebutton, 0, SpringLayout.SOUTH, ppanelmain);
-		layout.putConstraint(SpringLayout.WEST, exchangebutton, 0, SpringLayout.WEST, ppanelmain);
+		layout.putConstraint(SpringLayout.NORTH, exchangebutton, 0,
+				SpringLayout.SOUTH, ppanelmain);
+		layout.putConstraint(SpringLayout.WEST, exchangebutton, 0,
+				SpringLayout.WEST, ppanelmain);
 
-		layout.putConstraint(SpringLayout.NORTH, historypanel, 0, SpringLayout.NORTH, tabbedPane);
-		layout.putConstraint(SpringLayout.EAST, historypanel, 0, SpringLayout.EAST, this);
+		layout.putConstraint(SpringLayout.NORTH, historypanel, 0,
+				SpringLayout.NORTH, tabbedPane);
+		layout.putConstraint(SpringLayout.EAST, historypanel, 0,
+				SpringLayout.EAST, this);
 
 		preview.add(ppanelsub);
 
 		preview.add(ppanelmain);
-		
+
 		preview.add(exchangebutton);
 
 		preview.add(historypanel);
 
-//		this.setMinimumSize(new Dimension(300, 403));
+		// this.setMinimumSize(new Dimension(300, 403));
 
 		add(preview);
 
-		setMainColor(new Color(Integer.parseInt(SkinEditor.configuration.getProperty("primaryColor",
-				String.valueOf(new Color(Color.HSBtoRGB(0.0f, 1.0f, 1.0f)).getRGB())))));
-		
+		setMainColor(new Color(Integer.parseInt(SkinEditor.configuration
+				.getProperty("primaryColor", String.valueOf(new Color(Color
+						.HSBtoRGB(0.0f, 1.0f, 1.0f)).getRGB())))));
+
 		setPreferredSize(new Dimension(310, 372));
-		
+
 		preview.moveToFront(ppanelmain);
 	}
 
@@ -134,8 +149,10 @@ public class ColorChooser extends JPanel implements ActionListener {
 		Canvas.primaryColor = c;
 		colormain = c;
 		ppanelmain.setColor(c);
+		rgb.setColor(c);
 		hsb.setColor(c);
-		SkinEditor.configuration.setProperty("primaryColor", String.valueOf(c.getRGB()));
+		SkinEditor.configuration.setProperty("primaryColor",
+				String.valueOf(c.getRGB()));
 		preview.moveToFront(ppanelmain);
 	}
 
@@ -144,8 +161,22 @@ public class ColorChooser extends JPanel implements ActionListener {
 		Canvas.primaryColor = c;
 		colormain = c;
 		ppanelmain.setColor(c);
+		rgb.setColor(c);
 		hsb.setColor(hsbc);
-		SkinEditor.configuration.setProperty("primaryColor", String.valueOf(c.getRGB()));
+		SkinEditor.configuration.setProperty("primaryColor",
+				String.valueOf(c.getRGB()));
+		preview.moveToFront(ppanelmain);
+	}
+
+	public static void setMainColor(int[] rgbvalue) {
+		Color c = new Color(rgbvalue[0], rgbvalue[1], rgbvalue[2]);
+		Canvas.primaryColor = c;
+		colormain = c;
+		ppanelmain.setColor(c);
+		rgb.setColor(rgbvalue);
+		hsb.setColor(c);
+		SkinEditor.configuration.setProperty("primaryColor",
+				String.valueOf(c.getRGB()));
 		preview.moveToFront(ppanelmain);
 	}
 
@@ -172,7 +203,7 @@ public class ColorChooser extends JPanel implements ActionListener {
 			LineBorder lb1 = new LineBorder(Color.LIGHT_GRAY, 5);
 			LineBorder lb2 = new LineBorder(Color.GRAY);
 			CompoundBorder cb = new CompoundBorder(lb2, lb1);
-			
+
 			setBorder(cb);
 		}
 
@@ -207,7 +238,7 @@ public class ColorChooser extends JPanel implements ActionListener {
 			LineBorder lb = new LineBorder(Color.BLACK);
 			TitledBorder tb = new TitledBorder(lb, "History");
 			setLayout(new GridLayout(y, x));
-			//mainpreview.setAlignmentY(CENTER_ALIGNMENT);
+			// mainpreview.setAlignmentY(CENTER_ALIGNMENT);
 			history = new History[x][y];
 			for (int j = 0; j < x; j++) {
 				for (int i = 0; i < y; i++) {
