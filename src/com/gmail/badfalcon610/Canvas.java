@@ -2,7 +2,6 @@ package com.gmail.badfalcon610;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -10,6 +9,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -71,6 +72,7 @@ public class Canvas extends JPanel implements ComponentListener {
 	static boolean selected;
 	static boolean pressed;
 	static boolean released;
+	static boolean inside;
 	boolean changed;
 	static boolean selectedinside;
 	static boolean grab;
@@ -169,10 +171,14 @@ public class Canvas extends JPanel implements ComponentListener {
 		rescale(getWidth(), getHeight());
 
 		Graphics2D display = (Graphics2D) g.create();
+		display.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_OFF);
 
 		BufferedImage buffer = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_ARGB_PRE);
 		Graphics2D gbuffer = buffer.createGraphics();
+		gbuffer.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_OFF);
 
 		// 周りの背景
 		gbuffer.setPaint(Color.LIGHT_GRAY);
@@ -239,6 +245,12 @@ public class Canvas extends JPanel implements ComponentListener {
 					break;
 				case 3:
 					// bucket
+					Color current = new Color(change.getRGB(dotcurrent.x,
+							dotcurrent.y), true);
+					if (!current.equals(primaryColor)) {
+						scanLineFill(dotcurrent.x, dotcurrent.y, current);
+						SkinEditor.colorchooser.addToHistory(primaryColor);
+					}
 					break;
 				case 4:
 					// line
@@ -305,8 +317,18 @@ public class Canvas extends JPanel implements ComponentListener {
 			// マウスを十字矢印に
 			c = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
 		} else {
-
-			c = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+			if (entered) {
+				BufferedImage customCursor = new BufferedImage(16, 16,
+						BufferedImage.TYPE_4BYTE_ABGR);
+				Graphics2D gCC = customCursor.createGraphics();
+				gCC.setColor(new Color(0, 0, 0, 0));
+				gCC.fillRect(0, 0, 16, 16);
+				gCC.dispose();
+				c = Toolkit.getDefaultToolkit().createCustomCursor(
+						customCursor, new Point(0, 0), "null_cursor");
+			} else {
+				c = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+			}
 		}
 		setCursor(c);
 
@@ -579,79 +601,79 @@ public class Canvas extends JPanel implements ComponentListener {
 		}
 	}
 
-	public class CanvasMouseListener extends MouseAdapter {
+	void scanLineFill(int x, int y, Color c) {
+		glayer1 = change.createGraphics();
+		// Graphics2D gsource = SkinEditor.source.createGraphics();
+		List<Point> buffer = new ArrayList<Point>();
+		buffer.add(new Point(x, y));
 
-		void scanLineFill(int x, int y, Color c) {
-			glayer1 = change.createGraphics();
-			// Graphics2D gsource = SkinEditor.source.createGraphics();
-			List<Point> buffer = new ArrayList<Point>();
-			buffer.add(new Point(x, y));
+		while (buffer.size() != 0) {
+			Point point = buffer.get(0);
+			buffer.remove(point);
 
-			while (buffer.size() != 0) {
-				Point point = buffer.get(0);
-				buffer.remove(point);
+			if (new Color(change.getRGB(point.x, point.y), true)
+					.equals(primaryColor)) {
+				continue;
+			}
 
-				if (new Color(change.getRGB(point.x, point.y), true)
-						.equals(primaryColor)) {
-					continue;
-				}
-
-				int leftx = point.x;
-				for (int i = point.x - 1; 0 <= i; i--) {
-					if (!new Color(change.getRGB(i, point.y), true).equals(c)) {
-						leftx = i + 1;
-						break;
-					} else {
-						leftx = i;
-					}
-				}
-
-				int rightx = point.x;
-				for (int i = point.x + 1; i <= 64 - 1; i++) {
-					if (!new Color(change.getRGB(i, point.y), true).equals(c)) {
-						rightx = i - 1;
-						break;
-					} else {
-						rightx = i;
-					}
-				}
-				glayer1.setPaint(primaryColor);
-				glayer1.drawLine(leftx, point.y, rightx, point.y);
-
-				if (point.y + 1 < 64) {
-					buffer = scanLine(leftx, rightx, point.y + 1, c, buffer);
-				}
-				if (0 <= point.y - 1) {
-					buffer = scanLine(leftx, rightx, point.y - 1, c, buffer);
+			int leftx = point.x;
+			for (int i = point.x - 1; 0 <= i; i--) {
+				if (!new Color(change.getRGB(i, point.y), true).equals(c)) {
+					leftx = i + 1;
+					break;
+				} else {
+					leftx = i;
 				}
 			}
-			glayer1.dispose();
-		}
 
-		List<Point> scanLine(int leftx, int rightx, int y, Color c,
-				List<Point> buffer) {
-			while (leftx <= rightx) {
-				for (; leftx <= rightx; leftx++) {
-					if (new Color(SkinEditor.source.getRGB(leftx, y), true)
-							.equals(c)) {
-						break;
-					}
+			int rightx = point.x;
+			for (int i = point.x + 1; i <= 64 - 1; i++) {
+				if (!new Color(change.getRGB(i, point.y), true).equals(c)) {
+					rightx = i - 1;
+					break;
+				} else {
+					rightx = i;
 				}
+			}
+			glayer1.setPaint(primaryColor);
+			glayer1.drawLine(leftx, point.y, rightx, point.y);
 
-				if (rightx < leftx) {
+			if (point.y + 1 < 64) {
+				buffer = scanLine(leftx, rightx, point.y + 1, c, buffer);
+			}
+			if (0 <= point.y - 1) {
+				buffer = scanLine(leftx, rightx, point.y - 1, c, buffer);
+			}
+		}
+		glayer1.dispose();
+	}
+
+	List<Point> scanLine(int leftx, int rightx, int y, Color c,
+			List<Point> buffer) {
+		while (leftx <= rightx) {
+			for (; leftx <= rightx; leftx++) {
+				if (new Color(SkinEditor.source.getRGB(leftx, y), true)
+						.equals(c)) {
 					break;
 				}
-
-				for (; leftx <= rightx; leftx++) {
-					if (!new Color(SkinEditor.source.getRGB(leftx, y), true)
-							.equals(c)) {
-						break;
-					}
-				}
-				buffer.add(new Point(leftx - 1, y));
 			}
-			return buffer;
+
+			if (rightx < leftx) {
+				break;
+			}
+
+			for (; leftx <= rightx; leftx++) {
+				if (!new Color(SkinEditor.source.getRGB(leftx, y), true)
+						.equals(c)) {
+					break;
+				}
+			}
+			buffer.add(new Point(leftx - 1, y));
 		}
+		return buffer;
+	}
+
+	public class CanvasMouseListener extends MouseAdapter {
 
 		public void mousePressed(MouseEvent e) {
 
@@ -820,7 +842,6 @@ public class Canvas extends JPanel implements ComponentListener {
 					Color current = new Color(change.getRGB(dotcurrent.x,
 							dotcurrent.y), true);
 					if (!current.equals(primaryColor)) {
-						scanLineFill(dotcurrent.x, dotcurrent.y, current);
 						SkinEditor.colorchooser.addToHistory(primaryColor);
 					}
 					break;
@@ -898,15 +919,11 @@ public class Canvas extends JPanel implements ComponentListener {
 		}
 
 		public void mouseEntered(MouseEvent e) {
-			Cursor c = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-			Component p = (Component) e.getSource();
-			p.setCursor(c);
+			inside = true;
 		}
 
 		public void mouseExited(MouseEvent e) {
-			Cursor c = Cursor.getDefaultCursor();
-			Component p = (Component) e.getSource();
-			p.setCursor(c);
+			inside = false;
 		}
 
 		public void mouseWheelMoved(MouseWheelEvent e) {

@@ -60,10 +60,8 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.CannotRedoException;
@@ -313,7 +311,7 @@ public class SkinEditor extends JFrame {
 	}
 
 	SkinEditor() {
-		try {
+/*		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
 			//
@@ -325,7 +323,7 @@ public class SkinEditor extends JFrame {
 			//
 		}
 		SwingUtilities.updateComponentTreeUI(this);
-		initialize();
+*/		initialize();
 		addKeyListener(new newKeyListener());
 		CloseListener cl = new CloseListener();
 		addWindowListener(cl);
@@ -571,8 +569,8 @@ public class SkinEditor extends JFrame {
 			toolbar.setFloatable(false);
 			toolbar.setBorderPainted(false);
 			toolbar.setPreferredSize(new Dimension(40, 40 * imgpass.length));
-			setMaximumSize(new Dimension(40, 40 * imgpass.length));
-			setMinimumSize(new Dimension(40, 40 * imgpass.length));
+//			setMaximumSize(new Dimension(40, 40 * imgpass.length));
+//			setMinimumSize(new Dimension(40, 40 * imgpass.length));
 			for (int y = 0; y < imgpass.length; y++) {
 				togglebuttons[y] = new JToggleButton(new ImageIcon(
 						tk.getImage(getClass().getResource(imgpass[y]))));
