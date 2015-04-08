@@ -60,8 +60,10 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.CannotRedoException;
@@ -158,7 +160,7 @@ public class SkinEditor extends JFrame {
 
 	static int scale = 6;
 
-	final String version = "0.9";
+	final String version = "1.0b";
 
 	static boolean converted;
 	static boolean edited;
@@ -311,7 +313,7 @@ public class SkinEditor extends JFrame {
 	}
 
 	SkinEditor() {
-/*		try {
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
 			//
@@ -323,7 +325,7 @@ public class SkinEditor extends JFrame {
 			//
 		}
 		SwingUtilities.updateComponentTreeUI(this);
-*/		initialize();
+		initialize();
 		addKeyListener(new newKeyListener());
 		CloseListener cl = new CloseListener();
 		addWindowListener(cl);
@@ -987,7 +989,7 @@ public class SkinEditor extends JFrame {
 		for (int i = 0; i < bitemp.getHeight(); i++) {
 			for (int j = 0; j < bitemp.getWidth(); j++) {
 				if (bitemp.getRGB(i, j) == alpha) {
-					bitemp.setRGB(i, j, IU.argb(0, 0, 0, 0));
+//					bitemp.setRGB(i, j, IU.argb(0, 0, 0, 0));
 				}
 			}
 		}

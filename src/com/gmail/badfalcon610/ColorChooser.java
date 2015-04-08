@@ -239,9 +239,9 @@ public class ColorChooser extends JPanel implements ActionListener {
 			TitledBorder tb = new TitledBorder(lb, "History");
 			setLayout(new GridLayout(y, x));
 			// mainpreview.setAlignmentY(CENTER_ALIGNMENT);
-			history = new History[x][y];
-			for (int j = 0; j < x; j++) {
-				for (int i = 0; i < y; i++) {
+			history = new History[y][x];
+			for (int j = 0; j < y; j++) {
+				for (int i = 0; i < x; i++) {
 					history[j][i] = new History(35, 35);
 					add(history[j][i]);
 				}
@@ -258,7 +258,7 @@ public class ColorChooser extends JPanel implements ActionListener {
 				colorhistory.removeLast();
 			}
 			for (int i = 0; i < colorhistory.size(); i++) {
-				history[i / y][i % x].setColor(colorhistory.get(i));
+				history[i / x][i % x].setColor(colorhistory.get(i));
 
 			}
 		}
