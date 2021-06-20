@@ -160,7 +160,7 @@ public class SkinEditor extends JFrame {
 
 	static int scale = 6;
 
-	final String version = "1.0b";
+	final String version = "1.0c";
 
 	static boolean converted;
 	static boolean edited;
