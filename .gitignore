@@ -1,36 +1,38 @@
-# Windows image file caches
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Eclipse
+.project
+.classpath
+.settings
+
+# Idea
+.idea
+*.iml
+*.iws
+*.ipr
+
+# OS
 Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# =========================
-# Operating System Files
-# =========================
-
-# OSX
-# =========================
-
 .DS_Store
-.AppleDouble
-.LSOverride
 
-# Icon must ends with two \r.
-Icon
+# Gradle
+.gradle
+!gradle-wrapper.jar
 
-# Thumbnails
-._*
+# Maven
+target
 
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
+# Build
+out
+build
+bin
+classes
+
+# Other
+*.log
+*.swp
+*.bak
