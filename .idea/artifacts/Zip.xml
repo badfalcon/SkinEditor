@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact name="Zip">
+    <output-path>$PROJECT_DIR$/classes/artifacts/Zip</output-path>
+    <properties id="ant-postprocessing">
+      <options enabled="true" />
+    </properties>
+    <root id="root">
+      <element id="archive" name="SkinEditor1.0c.zip">
+        <element id="artifact" artifact-name="SkinEditor1.0c" />
+      </element>
+    </root>
+  </artifact>
+</component>

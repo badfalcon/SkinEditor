@@ -246,12 +246,12 @@ public class SkinEditor extends JFrame {
 			"line", "square", "fsquare", "ellipse", "fellipse", "feraser",
 			"select" };
 
-	static final String[] imgpass = { "img/brush.png", "img/eraser.png",
-			"img/color_dropper.png", "img/paint_bucket.png", "img/line.png",
-			"img/rectangle.png", "img/frectangle.png", "img/ellipse.png",
-			"img/fellipse.png", "img/feraser.png", "img/select.png" };
+	static final String[] imgpass = { "/img/brush.png", "/img/eraser.png",
+			"/img/color_dropper.png", "/img/paint_bucket.png", "/img/line.png",
+			"/img/rectangle.png", "/img/frectangle.png", "/img/ellipse.png",
+			"/img/fellipse.png", "/img/feraser.png", "/img/select.png" };
 
-	final static String iconPass = "img/stevehead.png";
+	final static String iconPass = "/img/stevehead.png";
 
 	static JToggleButton[] togglebuttons;
 	ButtonGroup buttongroup;

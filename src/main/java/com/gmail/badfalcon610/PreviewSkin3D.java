@@ -54,7 +54,7 @@ public class PreviewSkin3D implements GLEventListener {
 	private Texture texture;
 	TextureData newtex = null;
 
-	private final String grassPass = "img/grass.png";
+	private final String grassPass = "/img/grass.png";
 
 	// TEXTURE START POSITION
 	// HEAD,BODY,RARM,RLEG,LARM,LLEG
