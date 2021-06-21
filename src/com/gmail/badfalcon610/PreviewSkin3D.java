@@ -1,17 +1,17 @@
 package com.gmail.badfalcon610;
 
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.fixedfunc.GLMatrixFunc.*;
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
 
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.texture.Texture;
