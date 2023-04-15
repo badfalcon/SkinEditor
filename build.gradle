@@ -1,5 +1,5 @@
 group 'net.badfalcon'
-version '1.0c'
+version '1.0d'
 
 apply plugin: "java"
 apply plugin: "application"
@@ -23,32 +23,8 @@ jar {
 }
 
 dependencies {
-    compile "org.jogamp.gluegen:gluegen-rt:2.3.2"
-    compile "org.jogamp.jogl:jogl-all:2.3.2"
-
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-android-aarch64"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-android-armv6"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-linux-amd64"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-linux-armv6"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-linux-armv6hf"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-linux-i586"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-macosx-universal"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-solaris-amd64"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-solaris-i586"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-windows-amd64"
-    runtime "org.jogamp.gluegen:gluegen-rt:2.3.2:natives-windows-i586"
-
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-android-aarch64"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-android-armv6"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-linux-amd64"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-linux-armv6"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-linux-armv6hf"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-linux-i586"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-macosx-universal"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-solaris-amd64"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-solaris-i586"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-windows-amd64"
-    runtime "org.jogamp.jogl:jogl-all:2.3.2:natives-windows-i586"
+    implementation fileTree(dir: 'jogl', include: ['*.jar'])
+    runtimeOnly fileTree(dir: 'jogl/natives', include: ['*.jar'])
 }
 
 defaultTasks 'clean', 'build'
