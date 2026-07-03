@@ -67,6 +67,11 @@ public class ResourcesJA extends ListResourceBundle {
 			{ "hidepallet", "パレットを非表示にする" },
 			{ "poppreview", "プレビューを別ウィンドウに表示" },
 
+			{ "light theme", "ライトテーマ" },
+			{ "dark theme", "ダークテーマ" },
+			{ "swap colors", "色を入れ替える" },
+			{ "History", "履歴" },
+
 			{ "About", "Skin Editorについて" },
 
 			{ "continue", "続ける" },

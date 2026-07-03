@@ -18,7 +18,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SpringLayout;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
@@ -55,25 +54,22 @@ public class ColorChooser extends JPanel implements ActionListener {
 		rgbpanel = new RGBPanel();
 
 		tabbedPane.addTab("HSB", null, hsb, null);
-		tabbedPane.addTab("RGBPanel", null, rgbpanel, null);
-		tabbedPane.addTab("RGBSlider", null, rgb, null);
-
-		// JPanel Sample = new JPanel();
-		// tabbedPane.addTab("Sample", null, Sample, null);
+		tabbedPane.addTab("RGB", null, rgbpanel, null);
+		tabbedPane.addTab("Slider", null, rgb, null);
 
 		preview = new JLayeredPane();
 		SpringLayout layout = new SpringLayout();
 		preview.setLayout(layout);
-		// preview.setLayout(new GridLayout(0, 3, 10, 10));
 
 		ppanelmain = new MainPreview(colormain, 60, 60);
 
 		colorsub = Color.WHITE;
 		ppanelsub = new MainPreview(colorsub, 60, 60);
 
-		exchangebutton = new JButton();
+		exchangebutton = new JButton("⇄");
+		exchangebutton.setToolTipText(SkinEditor.getResource("swap colors"));
 		exchangebutton.setPreferredSize(new Dimension(30, 30));
-		exchangebutton.setBorderPainted(false);
+		exchangebutton.setFocusable(false);
 		exchangebutton.addActionListener(this);
 		historypanel = new HistoryPanel(5, 2);
 
@@ -212,10 +208,10 @@ public class ColorChooser extends JPanel implements ActionListener {
 			this.x = x;
 			this.y = y;
 			colorhistory = new LinkedList<Color>();
-			LineBorder lb = new LineBorder(Color.BLACK);
-			TitledBorder tb = new TitledBorder(lb, "History");
+			LineBorder lb = new LineBorder(Color.GRAY);
+			TitledBorder tb = new TitledBorder(lb,
+					SkinEditor.getResource("History"));
 			setLayout(new GridLayout(y, x));
-			// mainpreview.setAlignmentY(CENTER_ALIGNMENT);
 			history = new History[y][x];
 			for (int j = 0; j < y; j++) {
 				for (int i = 0; i < x; i++) {
@@ -250,7 +246,7 @@ public class ColorChooser extends JPanel implements ActionListener {
 				WIDTH = w;
 				HEIGHT = h;
 				setPreferredSize(new Dimension(WIDTH, HEIGHT));
-				setBorder(new BevelBorder(BevelBorder.LOWERED));
+				setBorder(new LineBorder(Color.GRAY));
 				addMouseListener(new historyMouseListener());
 			}
 

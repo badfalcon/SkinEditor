@@ -44,22 +44,24 @@ import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.CannotRedoException;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 public class SkinEditor extends JFrame {
 	public class MyTransferHandler extends TransferHandler {
@@ -124,7 +126,7 @@ public class SkinEditor extends JFrame {
 					.getBundle("com.gmail.badfalcon610.ResourcesEN");
 		}
 		SwingUtilities.invokeLater(() -> {
-			main = new SkinEditor();
+			configuration = new Properties();
 			try (InputStream inputStream = new FileInputStream(
 					"SkinEditor.properties")) {
 				configuration.load(inputStream);
@@ -133,8 +135,62 @@ public class SkinEditor extends JFrame {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			applyTheme(configuration.getProperty("theme", "light"));
+			main = new SkinEditor();
 			loadConfig();
 		});
+	}
+
+	static void applyTheme(String theme) {
+		if ("dark".equals(theme)) {
+			FlatDarkLaf.setup();
+		} else {
+			FlatLightLaf.setup();
+		}
+		configuration.setProperty("theme", theme);
+		if (main != null) {
+			FlatLaf.updateUI();
+			updateToolIcons();
+		}
+	}
+
+	static boolean isDarkTheme() {
+		return "dark".equals(configuration.getProperty("theme", "light"));
+	}
+
+	/**
+	 * ツールアイコンを読み込む。ダークテーマでは黒いアイコンが背景に沈むため
+	 * 色を反転させる。
+	 */
+	static ImageIcon loadToolIcon(String path) {
+		try {
+			BufferedImage loaded = ImageIO.read(SkinEditor.class
+					.getResource(path));
+			BufferedImage image = new BufferedImage(loaded.getWidth(),
+					loaded.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = image.createGraphics();
+			g.drawImage(loaded, 0, 0, null);
+			g.dispose();
+			if (isDarkTheme()) {
+				for (int y = 0; y < image.getHeight(); y++) {
+					for (int x = 0; x < image.getWidth(); x++) {
+						int argb = image.getRGB(x, y);
+						int inverted = (argb & 0xff000000)
+								| (~argb & 0x00ffffff);
+						image.setRGB(x, y, inverted);
+					}
+				}
+			}
+			return new ImageIcon(image);
+		} catch (IOException | IllegalArgumentException e) {
+			return new ImageIcon();
+		}
+	}
+
+	static void updateToolIcons() {
+		for (int i = 0; i < togglebuttons.length; i++) {
+			togglebuttons[i].setIcon(loadToolIcon(TOOL_ICON_PATHS[i]));
+		}
 	}
 
 	static String filename;
@@ -216,6 +272,9 @@ public class SkinEditor extends JFrame {
 			resources.getString("poppreview") };
 	final String[] displayItemIdentifier = { "hidepallet", "popprev" };
 
+	static JRadioButtonMenuItem lightThemeItem;
+	static JRadioButtonMenuItem darkThemeItem;
+
 	static JMenuItem[] fileItemList;
 
 	final String[] commandName = { "brush", "eraser", "dropper", "bucket",
@@ -255,7 +314,6 @@ public class SkinEditor extends JFrame {
 
 	void initialize() {
 		can = new Canvas();
-		configuration = new Properties();
 		previoustool = -1;
 		can.editNum = 0;
 		slim = false;
@@ -283,13 +341,6 @@ public class SkinEditor extends JFrame {
 	}
 
 	SkinEditor() {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException
-				| IllegalAccessException | UnsupportedLookAndFeelException e) {
-			// fall back to the default look and feel
-		}
-		SwingUtilities.updateComponentTreeUI(this);
 		initialize();
 		addKeyListener(new ToolKeyListener());
 		CloseListener cl = new CloseListener();
@@ -384,6 +435,21 @@ public class SkinEditor extends JFrame {
 			displayItemList[i].setActionCommand(displayItemIdentifier[i]);
 		}
 
+		menuList[4].addSeparator();
+		lightThemeItem = new JRadioButtonMenuItem(
+				resources.getString("light theme"));
+		darkThemeItem = new JRadioButtonMenuItem(
+				resources.getString("dark theme"));
+		ButtonGroup themeGroup = new ButtonGroup();
+		themeGroup.add(lightThemeItem);
+		themeGroup.add(darkThemeItem);
+		lightThemeItem.setActionCommand("theme light");
+		darkThemeItem.setActionCommand("theme dark");
+		lightThemeItem.addActionListener(al);
+		darkThemeItem.addActionListener(al);
+		menuList[4].add(lightThemeItem);
+		menuList[4].add(darkThemeItem);
+
 		JMenuItem helpitem1 = new JMenuItem(resources.getString("About"));
 		helpitem1.addActionListener(al);
 		helpitem1.setActionCommand("about");
@@ -477,6 +543,12 @@ public class SkinEditor extends JFrame {
 				String.valueOf(false)));
 		displayItemList[1].setSelected(popPreview);
 
+		if ("dark".equals(configuration.getProperty("theme", "light"))) {
+			darkThemeItem.setSelected(true);
+		} else {
+			lightThemeItem.setSelected(true);
+		}
+
 		prevFrame.loadConfig();
 		togglePrev();
 
@@ -515,8 +587,8 @@ public class SkinEditor extends JFrame {
 			toolbar.setPreferredSize(new Dimension(40,
 					40 * TOOL_ICON_PATHS.length));
 			for (int y = 0; y < TOOL_ICON_PATHS.length; y++) {
-				togglebuttons[y] = new JToggleButton(new ImageIcon(
-						tk.getImage(getClass().getResource(TOOL_ICON_PATHS[y]))));
+				togglebuttons[y] = new JToggleButton(
+						loadToolIcon(TOOL_ICON_PATHS[y]));
 				togglebuttons[y].setActionCommand(String.valueOf(y));
 				togglebuttons[y].addActionListener(new ToolListener());
 				togglebuttons[y].setMnemonic(mnemonic[y]);
@@ -764,30 +836,21 @@ public class SkinEditor extends JFrame {
 							String.valueOf(popPreview));
 
 					togglePrev();
+				} else if (act.equals("theme light")) {
+					applyTheme("light");
+				} else if (act.equals("theme dark")) {
+					applyTheme("dark");
 				} else if (act.equals("about")) {
-					JFrame about = new JFrame(resources.getString("about"));
-
-					JLabel aboutText = new JLabel(
-							resources.getString("<html>Skin Editor Ver.")
-									+ version
-									+ resources
-											.getString("<br> made by badfalcon<br><br>Great respect to <br>Minecraft Skin Edit made by Patrik Swedman <br>Minecraft made by Mojang<br><br>paint icons from Icons8 (http://icons8.com/)<br>"));
-					Toolkit tk = Toolkit.getDefaultToolkit();
-					aboutText.setIcon(new ImageIcon(tk.getImage(getClass()
-							.getResource(ICON_PATH))));
-
-					about.add(aboutText, BorderLayout.CENTER);
-
-					about.setIconImage(tk.getImage(getClass().getResource(
-							ICON_PATH)));
-					aboutText.setForeground(UIManager
-							.getColor("Label.foreground"));
-					about.setSize(370, 150);
-					about.setLocationByPlatform(true);
-					about.setResizable(false);
-					about.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-					about.setLocationRelativeTo(null);
-					about.setVisible(true);
+					String aboutText = resources
+							.getString("<html>Skin Editor Ver.")
+							+ version
+							+ resources
+									.getString("<br> made by badfalcon<br><br>Great respect to <br>Minecraft Skin Edit made by Patrik Swedman <br>Minecraft made by Mojang<br><br>paint icons from Icons8 (http://icons8.com/)<br>");
+					ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit()
+							.getImage(getClass().getResource(ICON_PATH)));
+					JOptionPane.showMessageDialog(main, aboutText,
+							resources.getString("About"),
+							JOptionPane.INFORMATION_MESSAGE, icon);
 				} else {
 					System.out.println("missing");
 					System.out.println(e.getSource());

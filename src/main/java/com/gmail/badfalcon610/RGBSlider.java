@@ -18,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
 
 public class RGBSlider extends JPanel {
 
@@ -100,8 +99,7 @@ public class RGBSlider extends JPanel {
 			field.setName(String.valueOf(n));
 			field.setHorizontalAlignment(JTextField.RIGHT);
 			field.setInputVerifier(new IntegerInputVerifier());
-			field.setBorder(new BevelBorder(BevelBorder.LOWERED));
-			field.setMaximumSize(new Dimension(30, 20));
+			field.setMaximumSize(new Dimension(40, 24));
 
 			add(label);
 			add(slider);
@@ -157,7 +155,6 @@ public class RGBSlider extends JPanel {
 			addMouseListener(sl);
 			addMouseMotionListener(sl);
 			setMaximumSize(new Dimension(Width, Height));
-			// setBorder(new BevelBorder(BevelBorder.LOWERED));
 		}
 
 		public void paintComponent(Graphics g) {

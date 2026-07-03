@@ -9,6 +9,8 @@ More details: https://www.badfalcon.net/tools/
 
 ## Features
 
+- Modern flat UI ([FlatLaf](https://www.formdev.com/flatlaf/)) with light and
+  dark themes, switchable from the View menu
 - Pixel editing tools: brush, eraser, color dropper, paint bucket, line,
   rectangle / filled rectangle, ellipse / filled ellipse, area eraser, and
   rectangular selection with move / copy / cut / paste

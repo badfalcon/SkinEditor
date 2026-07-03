@@ -168,8 +168,8 @@ public class Canvas extends JPanel implements ComponentListener {
 		gbuffer.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_OFF);
 
-		// 周りの背景
-		gbuffer.setPaint(Color.LIGHT_GRAY);
+		// 周りの背景（テーマに合わせる）
+		gbuffer.setPaint(getBackground());
 		gbuffer.fill(new Rectangle(0, 0, width, height));
 
 		// メインの背景

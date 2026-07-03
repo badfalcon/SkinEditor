@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
-import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
 
 public class RGBPanel extends JPanel {
 
@@ -66,7 +66,7 @@ public class RGBPanel extends JPanel {
 		public MYColorChooserGB() {
 			addMouseListener(new ColorSliderListener());
 			addMouseMotionListener(new ColorSliderListener());
-			setBorder(new BevelBorder(BevelBorder.LOWERED));
+			setBorder(new LineBorder(Color.GRAY));
 			setPreferredSize(new Dimension(Width, Height));
 		}
 
@@ -140,7 +140,7 @@ public class RGBPanel extends JPanel {
 		public MYColorChooserR() {
 			addMouseListener(new ColorSliderBListener());
 			addMouseMotionListener(new ColorSliderBListener());
-			setBorder(new BevelBorder(BevelBorder.LOWERED));
+			setBorder(new LineBorder(Color.GRAY));
 			setPreferredSize(new Dimension(Width, Height));
 		}
 

@@ -30,7 +30,7 @@ public class ResourcesEN extends ListResourceBundle {
 			{ "Save as", "Save as" },
 
 			{ "Undo", "Undo" },
-			{ "Redo", "Undo" },
+			{ "Redo", "Redo" },
 			{ "Copy", "Copy" },
 			{ "Cut", "Cut" },
 			{ "Paste", "Paste" },
@@ -66,6 +66,11 @@ public class ResourcesEN extends ListResourceBundle {
 
 			{ "hidepallet", "hide pallet" },
 			{ "poppreview", "pop out preview" },
+
+			{ "light theme", "Light theme" },
+			{ "dark theme", "Dark theme" },
+			{ "swap colors", "swap colors" },
+			{ "History", "History" },
 
 			{ "About", "About" },
 

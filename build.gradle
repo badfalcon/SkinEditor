@@ -26,6 +26,7 @@ ext {
 dependencies {
     implementation "org.jogamp.gluegen:gluegen-rt-main:${joglVersion}"
     implementation "org.jogamp.jogl:jogl-all-main:${joglVersion}"
+    implementation 'com.formdev:flatlaf:3.7.1'
 }
 
 tasks.withType(JavaCompile).configureEach {
