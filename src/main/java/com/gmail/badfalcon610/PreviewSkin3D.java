@@ -217,7 +217,7 @@ public class PreviewSkin3D implements GLEventListener {
 
 			gl.glPopMatrix();
 		}
-		if (!offset.equals(OUT) || !SkinEditor.isOld()) {
+		if (offset != OUT || !SkinEditor.isOld()) {
 
 			// 体
 			if (!hideBody) {

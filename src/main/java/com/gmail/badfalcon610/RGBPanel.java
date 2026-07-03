@@ -14,28 +14,11 @@ import javax.swing.border.BevelBorder;
 
 public class RGBPanel extends JPanel {
 
-	public static void main(String[] args) {
-		new TestFrame(new RGBPanel());
-	}
-
 	Color color;
 	int[] rgb;
 
 	MYColorChooserGB mccgb;
 	MYColorChooserR mccr;
-
-	public RGBPanel(Color c) {
-
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		JPanel hspanel = new JPanel();
-		mccgb = new MYColorChooserGB();
-		hspanel.add(mccgb);
-		JPanel bpanel = new JPanel();
-		mccr = new MYColorChooserR();
-		bpanel.add(mccr);
-		add(hspanel);
-		add(bpanel);
-	}
 
 	public RGBPanel() {
 		rgb = new int[] { 255, 0, 0 };
@@ -180,7 +163,6 @@ public class RGBPanel extends JPanel {
 					rgb[0] = redMax;
 				} else if (0 <= y && y < Height + 1) {
 					rgb[0] = redMax - y;
-					;
 				} else if (Height + 1 <= y) {
 					rgb[0] = 0;
 				}
@@ -195,7 +177,6 @@ public class RGBPanel extends JPanel {
 					rgb[0] = redMax;
 				} else if (0 <= y && y < Height + 1) {
 					rgb[0] = redMax - y;
-					;
 				} else if (Height + 1 <= y) {
 					rgb[0] = 0;
 				}

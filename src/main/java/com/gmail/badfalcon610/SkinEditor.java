@@ -2,7 +2,6 @@ package com.gmail.badfalcon610;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -16,8 +15,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -32,10 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -45,7 +39,6 @@ import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
@@ -67,7 +60,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.UndoableEditSupport;
 
 public class SkinEditor extends JFrame {
 	public class MyTransferHandler extends TransferHandler {
@@ -123,31 +115,26 @@ public class SkinEditor extends JFrame {
 
 	static SkinEditor main;
 
-	public static void main(String args[]) {
-		// Locale.setDefault(Locale.ENGLISH);
-		Locale locale = Locale.getDefault();
-		if (locale.equals(Locale.JAPAN)) {
-			resources = ResourceBundle
-					.getBundle("com.gmail.badfalcon610.ResourcesJA");
-		} else if (locale.equals(Locale.JAPANESE)) {
+	public static void main(String[] args) {
+		if ("ja".equals(Locale.getDefault().getLanguage())) {
 			resources = ResourceBundle
 					.getBundle("com.gmail.badfalcon610.ResourcesJA");
 		} else {
 			resources = ResourceBundle
 					.getBundle("com.gmail.badfalcon610.ResourcesEN");
 		}
-		main = new SkinEditor();
-		try {
-			InputStream inputStream = new FileInputStream(new File(
-					"SkinEditor.properties"));
-			configuration.load(inputStream);
-		} catch (FileNotFoundException e) {
-			configuration = new Properties();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+		SwingUtilities.invokeLater(() -> {
+			main = new SkinEditor();
+			try (InputStream inputStream = new FileInputStream(
+					"SkinEditor.properties")) {
+				configuration.load(inputStream);
+			} catch (FileNotFoundException e) {
+				// first launch: no saved settings yet
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			loadConfig();
-		}
+		});
 	}
 
 	static String filename;
@@ -155,14 +142,8 @@ public class SkinEditor extends JFrame {
 	static int tool;
 	static int previoustool;
 
-	final int MODE_64 = 0;
-	final int MODE_32 = 1;
+	final String version = "1.1.0";
 
-	static int scale = 6;
-
-	final String version = "1.0c";
-
-	static boolean converted;
 	static boolean edited;
 	static boolean hideTemplate;
 	static boolean hidePallet;
@@ -171,16 +152,11 @@ public class SkinEditor extends JFrame {
 	static boolean slim;
 	static boolean old;
 
-	static int minwidth;
-	static int minheight;
-
 	static File currentdirectory = new File(SkinEditor.class
 			.getProtectionDomain().getCodeSource().getLocation().getPath());
 	static File loadedfile;
 
-	static BufferedImage savedsource;
 	static BufferedImage source;
-	static Graphics2D display;
 
 	final String[] menuName = { resources.getString("File"),
 			resources.getString("Edit"), resources.getString("Settings"),
@@ -246,17 +222,16 @@ public class SkinEditor extends JFrame {
 			"line", "square", "fsquare", "ellipse", "fellipse", "feraser",
 			"select" };
 
-	static final String[] imgpass = { "/img/brush.png", "/img/eraser.png",
-			"/img/color_dropper.png", "/img/paint_bucket.png", "/img/line.png",
-			"/img/rectangle.png", "/img/frectangle.png", "/img/ellipse.png",
-			"/img/fellipse.png", "/img/feraser.png", "/img/select.png" };
+	static final String[] TOOL_ICON_PATHS = { "/img/brush.png",
+			"/img/eraser.png", "/img/color_dropper.png",
+			"/img/paint_bucket.png", "/img/line.png", "/img/rectangle.png",
+			"/img/frectangle.png", "/img/ellipse.png", "/img/fellipse.png",
+			"/img/feraser.png", "/img/select.png" };
 
-	final static String iconPass = "/img/stevehead.png";
+	static final String ICON_PATH = "/img/stevehead.png";
 
 	static JToggleButton[] togglebuttons;
 	ButtonGroup buttongroup;
-
-	JButton[] buttonlist = new JButton[imgpass.length];
 
 	static PreviewSkin3DPanel preview;
 	static ColorChooser colorchooser;
@@ -267,10 +242,6 @@ public class SkinEditor extends JFrame {
 	static ToolBar toolbar;
 
 	static JMenuItem[] settingItemList;
-
-	static JCheckBoxMenuItem oldpreview;
-
-	protected UndoableEditSupport undoSupport;
 
 	static JPanel toolpanel;
 
@@ -300,7 +271,6 @@ public class SkinEditor extends JFrame {
 		filename = resources.getString("untitled");
 		fileItemList[3].setEnabled(true);
 		edited = false;
-		converted = false;
 	}
 
 	void resetcolor() {
@@ -315,22 +285,16 @@ public class SkinEditor extends JFrame {
 	SkinEditor() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException e) {
-			//
-		} catch (InstantiationException e) {
-			//
-		} catch (IllegalAccessException e) {
-			//
-		} catch (UnsupportedLookAndFeelException e) {
-			//
+		} catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | UnsupportedLookAndFeelException e) {
+			// fall back to the default look and feel
 		}
 		SwingUtilities.updateComponentTreeUI(this);
 		initialize();
-		addKeyListener(new newKeyListener());
+		addKeyListener(new ToolKeyListener());
 		CloseListener cl = new CloseListener();
 		addWindowListener(cl);
 		addWindowStateListener(cl);
-		// addComponentListener(new SizeCheckListener());
 		setTransferHandler(new MyTransferHandler());
 
 		JMenuBar menubar = new JMenuBar();
@@ -427,12 +391,9 @@ public class SkinEditor extends JFrame {
 
 		setJMenuBar(menubar);
 
-		// Tbar toolbar = new Tbar();
 		toolbar = new ToolBar();
 
 		Container pane = getContentPane();
-
-		// pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
 		pane.add(toolbar, BorderLayout.WEST);
 
@@ -451,26 +412,17 @@ public class SkinEditor extends JFrame {
 		preview.setPreferredSize(new Dimension(300, 300));
 		prePanel = new JPanel();
 		prevFrame = new PreviewFrame();
-		/*
-		 * if (popPreview) { prevFrame.add(preview); prevFrame.pack();
-		 * prevFrame.setVisible(true); } else { prePanel.add(preview);
-		 * toolpanel.add(prePanel); }
-		 */
-		// toolpanel.add(preview);
 		pane.add(toolpanel, BorderLayout.EAST);
 
 		pane.setMinimumSize(new Dimension(40 + 300 + can.MINIMUM_SCALE * 72,
 				can.MINIMUM_SCALE * 72));
 
-		setIconImage(tk.getImage(getClass().getResource(iconPass)));
+		setIconImage(tk.getImage(getClass().getResource(ICON_PATH)));
 
 		newsource();
 
-		// addComponentListener(new SizeCheckListener());
-
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setTitle("Skin Editor");
-		// setResizable(false);
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -549,16 +501,6 @@ public class SkinEditor extends JFrame {
 				true);
 	}
 
-	void bselect(String act) {
-		for (JButton bact : buttonlist) {
-			if (bact.getActionCommand().equals(act)) {
-				bact.setBorderPainted(true);
-			} else {
-				bact.setBorderPainted(false);
-			}
-		}
-	}
-
 	public int[] mnemonic = { KeyEvent.VK_B, KeyEvent.VK_E, KeyEvent.VK_I,
 			KeyEvent.VK_F, KeyEvent.VK_L, KeyEvent.VK_R, KeyEvent.VK_R,
 			KeyEvent.VK_C, KeyEvent.VK_C, KeyEvent.VK_E, KeyEvent.VK_S };
@@ -567,15 +509,14 @@ public class SkinEditor extends JFrame {
 		public ToolBar() {
 			JToolBar toolbar = new JToolBar(null, JToolBar.VERTICAL);
 			buttongroup = new ButtonGroup();
-			togglebuttons = new JToggleButton[imgpass.length];
+			togglebuttons = new JToggleButton[TOOL_ICON_PATHS.length];
 			toolbar.setFloatable(false);
 			toolbar.setBorderPainted(false);
-			toolbar.setPreferredSize(new Dimension(40, 40 * imgpass.length));
-//			setMaximumSize(new Dimension(40, 40 * imgpass.length));
-//			setMinimumSize(new Dimension(40, 40 * imgpass.length));
-			for (int y = 0; y < imgpass.length; y++) {
+			toolbar.setPreferredSize(new Dimension(40,
+					40 * TOOL_ICON_PATHS.length));
+			for (int y = 0; y < TOOL_ICON_PATHS.length; y++) {
 				togglebuttons[y] = new JToggleButton(new ImageIcon(
-						tk.getImage(getClass().getResource(imgpass[y]))));
+						tk.getImage(getClass().getResource(TOOL_ICON_PATHS[y]))));
 				togglebuttons[y].setActionCommand(String.valueOf(y));
 				togglebuttons[y].addActionListener(new ToolListener());
 				togglebuttons[y].setMnemonic(mnemonic[y]);
@@ -590,75 +531,48 @@ public class SkinEditor extends JFrame {
 		}
 	}
 
-	public class newKeyListener implements KeyListener {
+	public class ToolKeyListener implements KeyListener {
 
 		boolean pressing = false;
 		boolean longpressed = false;
 
+		private void selectToolForKey(KeyEvent e) {
+			boolean shift = e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK;
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_B:
+				togglebuttons[0].doClick();
+				break;
+			case KeyEvent.VK_I:
+				togglebuttons[2].doClick();
+				break;
+			case KeyEvent.VK_F:
+				togglebuttons[3].doClick();
+				break;
+			case KeyEvent.VK_L:
+				togglebuttons[4].doClick();
+				break;
+			case KeyEvent.VK_R:
+				togglebuttons[shift ? 6 : 5].doClick();
+				break;
+			case KeyEvent.VK_C:
+				togglebuttons[shift ? 8 : 7].doClick();
+				break;
+			case KeyEvent.VK_E:
+				togglebuttons[shift ? 9 : 1].doClick();
+				break;
+			default:
+				break;
+			}
+		}
+
 		@Override
 		public void keyTyped(KeyEvent e) {
-			int c = e.getKeyCode();
-			if (c == KeyEvent.VK_B) {
-				togglebuttons[0].doClick();
-			} else if (c == KeyEvent.VK_I) {
-				togglebuttons[2].doClick();
-			} else if (c == KeyEvent.VK_F) {
-				togglebuttons[3].doClick();
-			} else if (c == KeyEvent.VK_L) {
-				togglebuttons[4].doClick();
-			} else if (c == KeyEvent.VK_R) {
-				if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-					togglebuttons[6].doClick();
-				} else {
-					togglebuttons[5].doClick();
-				}
-			} else if (c == KeyEvent.VK_C) {
-				if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-					togglebuttons[8].doClick();
-				} else {
-					togglebuttons[7].doClick();
-				}
-			} else if (c == KeyEvent.VK_E) {
-				if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-					togglebuttons[9].doClick();
-				} else {
-					togglebuttons[1].doClick();
-				}
-			}
-			can.repaint();
 		}
 
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (!pressing) {
-				int c = e.getKeyCode();
-				if (c == KeyEvent.VK_B) {
-					togglebuttons[0].doClick();
-				} else if (c == KeyEvent.VK_I) {
-					togglebuttons[2].doClick();
-				} else if (c == KeyEvent.VK_F) {
-					togglebuttons[3].doClick();
-				} else if (c == KeyEvent.VK_L) {
-					togglebuttons[4].doClick();
-				} else if (c == KeyEvent.VK_R) {
-					if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-						togglebuttons[6].doClick();
-					} else {
-						togglebuttons[5].doClick();
-					}
-				} else if (c == KeyEvent.VK_C) {
-					if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-						togglebuttons[8].doClick();
-					} else {
-						togglebuttons[7].doClick();
-					}
-				} else if (c == KeyEvent.VK_E) {
-					if (e.getModifiersEx() == InputEvent.SHIFT_DOWN_MASK) {
-						togglebuttons[9].doClick();
-					} else {
-						togglebuttons[1].doClick();
-					}
-				}
+				selectToolForKey(e);
 				can.repaint();
 				pressing = true;
 			} else {
@@ -800,7 +714,7 @@ public class SkinEditor extends JFrame {
 				} else if (act.equals("preview")) {
 				} else if (act.equals("upload")) {
 					if (edited) {
-						JOptionPane.showMessageDialog(null,
+						JOptionPane.showMessageDialog(main,
 								"You need to save before uploading");
 						if (loadedfile != null) {
 							overwrite(loadedfile);
@@ -808,13 +722,7 @@ public class SkinEditor extends JFrame {
 							savenew();
 						}
 					}
-					URL url = null;
-					try {
-						url = new URL("https://minecraft.net/profile");
-					} catch (MalformedURLException ee) {
-						ee.printStackTrace();
-					}
-					openWebpage(url);
+					openWebpage(URI.create("https://www.minecraft.net/msaprofile"));
 				} else if (act.equals("old")) {
 					old = skinItemList[0].isSelected();
 					skinItemList[1].setEnabled(!old);
@@ -866,12 +774,12 @@ public class SkinEditor extends JFrame {
 											.getString("<br> made by badfalcon<br><br>Great respect to <br>Minecraft Skin Edit made by Patrik Swedman <br>Minecraft made by Mojang<br><br>paint icons from Icons8 (http://icons8.com/)<br>"));
 					Toolkit tk = Toolkit.getDefaultToolkit();
 					aboutText.setIcon(new ImageIcon(tk.getImage(getClass()
-							.getResource(iconPass))));
+							.getResource(ICON_PATH))));
 
 					about.add(aboutText, BorderLayout.CENTER);
 
 					about.setIconImage(tk.getImage(getClass().getResource(
-							iconPass)));
+							ICON_PATH)));
 					aboutText.setForeground(UIManager
 							.getColor("Label.foreground"));
 					about.setSize(370, 150);
@@ -915,49 +823,31 @@ public class SkinEditor extends JFrame {
 	}
 
 	public void open(File file) {
-		BufferedImage temp = source;
+		BufferedImage loaded = null;
 		try {
-			newsource();
-			source = ImageIO.read(file);
-		} catch (Exception er) {
-			er.printStackTrace();
+			loaded = ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if (source.getWidth() == 64) {
-			if (source.getHeight() == 32) {
-				source = convert(source, true);
-				loadedfile = file;
-				currentdirectory = new File(loadedfile.getPath());
-				filename = loadedfile.getName();
-				converted = true;
-				can.editNum = 0;
-				fileItemList[3].setEnabled(true);
-				can.initUndo();
-				editItemList[0].setEnabled(can.undoManager.canUndo());
-				editItemList[1].setEnabled(can.undoManager.canRedo());
-				updateTitle();
-				can.changed = true;
-			} else if (source.getHeight() == 64) {
-				source = convert(source, false);
-				loadedfile = file;
-				currentdirectory = new File(loadedfile.getPath());
-				filename = loadedfile.getName();
-				can.editNum = 0;
-				fileItemList[3].setEnabled(true);
-				can.initUndo();
-				editItemList[0].setEnabled(can.undoManager.canUndo());
-				editItemList[1].setEnabled(can.undoManager.canRedo());
-				updateTitle();
-				can.changed = true;
-			} else {
-				JOptionPane.showMessageDialog(this,
-						resources.getString("unsupported size"));
-				source = temp;
-			}
-		} else {
+		if (loaded == null || loaded.getWidth() != 64
+				|| (loaded.getHeight() != 32 && loaded.getHeight() != 64)) {
 			JOptionPane.showMessageDialog(this,
 					resources.getString("unsupported size"));
-			source = temp;
+			return;
 		}
+		boolean legacyFormat = loaded.getHeight() == 32;
+		newsource();
+		source = convert(loaded, legacyFormat);
+		loadedfile = file;
+		currentdirectory = loadedfile.getParentFile();
+		filename = loadedfile.getName();
+		can.editNum = 0;
+		fileItemList[3].setEnabled(true);
+		can.initUndo();
+		editItemList[0].setEnabled(can.undoManager.canUndo());
+		editItemList[1].setEnabled(can.undoManager.canRedo());
+		updateTitle();
+		can.changed = true;
 	}
 
 	public static void openWebpage(URI uri) {
@@ -972,27 +862,11 @@ public class SkinEditor extends JFrame {
 		}
 	}
 
-	public static void openWebpage(URL url) {
-		try {
-			openWebpage(url.toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public BufferedImage convert(BufferedImage source, boolean to64) {
 		BufferedImage bitemp = new BufferedImage(64, 64,
 				BufferedImage.TYPE_INT_ARGB_PRE);
 		Graphics2D gtemp = bitemp.createGraphics();
 		gtemp.drawImage(source, 0, 0, this);
-		int alpha = bitemp.getRGB(0, 0);
-		for (int i = 0; i < bitemp.getHeight(); i++) {
-			for (int j = 0; j < bitemp.getWidth(); j++) {
-				if (bitemp.getRGB(i, j) == alpha) {
-//					bitemp.setRGB(i, j, IU.argb(0, 0, 0, 0));
-				}
-			}
-		}
 		if (to64) {
 			reverse(source, gtemp, 0, 16, 16, 48);
 			reverse(source, gtemp, 40, 16, 32, 48);
@@ -1030,9 +904,7 @@ public class SkinEditor extends JFrame {
 			ex.printStackTrace();
 		}
 
-		if (edited) {
-			edited = false;
-		}
+		edited = false;
 		can.editNum = 0;
 		updateTitle();
 	}
@@ -1069,57 +941,33 @@ public class SkinEditor extends JFrame {
 						resources.getString("The file exists.Overwrite?"),
 						resources.getString("existing file"),
 						JOptionPane.OK_CANCEL_OPTION);
-				if (select == JOptionPane.OK_OPTION) {
-					overwrite(file);
+				if (select != JOptionPane.OK_OPTION) {
+					return;
 				}
 			}
 			try {
 				BufferedImage image = getImage();
 				ImageIO.write(image, "png", file);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 
 			loadedfile = file;
-			currentdirectory = new File(loadedfile.getPath());
+			currentdirectory = loadedfile.getParentFile();
 			filename = loadedfile.getName();
-			if (edited) {
-				edited = false;
-			}
+			edited = false;
 			can.editNum = 0;
 			updateTitle();
-		} else if (selected == JFileChooser.CANCEL_OPTION) {
-		} else if (selected == JFileChooser.ERROR_OPTION) {
 		}
 	}
 
 	public static void updateTitle() {
-		if (can.getChangesNew(source,
+		fileItemList[3].setEnabled(can.getChangesNew(source,
 				new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB_PRE))
-				.size() != 0) {
-			fileItemList[3].setEnabled(true);
-		} else {
-			fileItemList[3].setEnabled(false);
-		}
-		if (edited) {
-			fileItemList[2].setEnabled(true);
-		} else {
-			fileItemList[2].setEnabled(false);
-		}
-	}
-
-	public class SizeCheckListener extends ComponentAdapter {
-		public void componentResized(ComponentEvent e) {
-			Component comp = e.getComponent();
-			String name = comp.getName();
-			int width = comp.getWidth();
-			int height = comp.getHeight();
-
-			System.out.println("");
-			System.out.println("name:" + name + "  width:" + width
-					+ "  height:" + height);
+				.size() != 0);
+		fileItemList[2].setEnabled(edited);
+		if (main != null && filename != null) {
+			main.setTitle((edited ? "*" : "") + filename + " - Skin Editor");
 		}
 	}
 
@@ -1146,7 +994,7 @@ public class SkinEditor extends JFrame {
 
 		public void windowStateChanged(WindowEvent e) {
 			configuration.setProperty("maximized",
-					String.valueOf(e.getNewState() == 6));
+					String.valueOf(e.getNewState() == MAXIMIZED_BOTH));
 		}
 
 	}
@@ -1198,59 +1046,12 @@ public class SkinEditor extends JFrame {
 
 	}
 
-	public class undoListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			try {
-				can.undoManager.undo();
-			} catch (CannotRedoException cre) {
-				cre.printStackTrace();
-			}
-			can.repaint();
-			editItemList[0].setEnabled(can.undoManager.canUndo());
-			editItemList[1].setEnabled(can.undoManager.canRedo());
-		}
-	}
-
-	public class redoListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			try {
-				can.undoManager.redo();
-			} catch (CannotRedoException cre) {
-				cre.printStackTrace();
-			}
-			can.repaint();
-			editItemList[0].setEnabled(can.undoManager.canUndo());
-			editItemList[1].setEnabled(can.undoManager.canRedo());
-		}
-	}
-
-	public int[] getRGBA(Color c) {
-		int[] rgba = new int[4];
-		rgba[0] = c.getRed();
-		rgba[1] = c.getGreen();
-		rgba[2] = c.getBlue();
-		rgba[3] = c.getAlpha();
-		return rgba;
-	}
-
-	public static void say(String str) {
-		System.out.println(str);
-	}
-
 	public static boolean isOld() {
-		if (old) {
-			return true;
-		} else {
-			return false;
-		}
+		return old;
 	}
 
 	public static boolean isSlim() {
-		if (slim) {
-			return true;
-		} else {
-			return false;
-		}
+		return slim;
 	}
 
 	class ImagePreview extends JComponent implements PropertyChangeListener {

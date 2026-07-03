@@ -6,8 +6,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.MultipleGradientPaint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -21,8 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 public class RGBSlider extends JPanel {
 
@@ -35,12 +31,6 @@ public class RGBSlider extends JPanel {
 	RGBLine red;
 	RGBLine green;
 	RGBLine blue;
-
-	public static void main(String[] args) {
-		RGBSlider rgbslider = new RGBSlider();
-		TestFrame tf = new TestFrame(rgbslider);
-		tf.pack();
-	}
 
 	public RGBSlider() {
 		rgb = new int[] { 255, 0, 0 };
@@ -107,8 +97,6 @@ public class RGBSlider extends JPanel {
 			label = new JLabel(s);
 			slider = new Slider(n, new Color[] { Color.BLACK, c });
 			field = new JTextField(String.valueOf(rgb[n]));
-			field.addActionListener(new MyActionListener());
-			field.getDocument().addDocumentListener(new MyDocumentListener());
 			field.setName(String.valueOf(n));
 			field.setHorizontalAlignment(JTextField.RIGHT);
 			field.setInputVerifier(new IntegerInputVerifier());
@@ -120,27 +108,6 @@ public class RGBSlider extends JPanel {
 			add(field);
 			setPreferredSize(new Dimension(289, 75));
 
-		}
-
-		public class MyDocumentListener implements DocumentListener {
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-
-			}
 		}
 
 		public class IntegerInputVerifier extends InputVerifier {
@@ -160,27 +127,11 @@ public class RGBSlider extends JPanel {
 					}
 				} catch (NumberFormatException e) {
 					UIManager.getLookAndFeel().provideErrorFeedback(c);
-					// Toolkit.getDefaultToolkit().beep();
 				}
 				return verified;
 			}
 		}
 
-		public class MyActionListener implements ActionListener {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-			}
-
-		}
-
-	}
-
-	public void showRGB() {
-		for (int i = 0; i < rgb.length; i++) {
-			U.say("rgb[" + i + "] = " + rgb[i]);
-		}
 	}
 
 	public class Slider extends JPanel {

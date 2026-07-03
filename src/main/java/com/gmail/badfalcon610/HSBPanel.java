@@ -14,28 +14,11 @@ import javax.swing.border.BevelBorder;
 
 public class HSBPanel extends JPanel {
 
-	public static void main(String[] args) {
-		new TestFrame(new HSBPanel());
-	}
-
 	Color color;
 	float[] hsb;
 
 	MYColorChooserHS mcchs;
 	MYColorChooserB mccb;
-
-	public HSBPanel(Color c) {
-
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		JPanel hspanel = new JPanel();
-		mcchs = new MYColorChooserHS();
-		hspanel.add(mcchs);
-		JPanel bpanel = new JPanel();
-		mccb = new MYColorChooserB();
-		bpanel.add(mccb);
-		add(hspanel);
-		add(bpanel);
-	}
 
 	public HSBPanel() {
 		hsb = new float[3];
@@ -81,8 +64,8 @@ public class HSBPanel extends JPanel {
 	public class MYColorChooserHS extends JPanel {
 
 		float hueMax = 240;
-		float saurationMax = 240;
-		int Height = (int) saurationMax;
+		float saturationMax = 240;
+		int Height = (int) saturationMax;
 		int Width = (int) hueMax;
 
 		public MYColorChooserHS() {
@@ -95,18 +78,18 @@ public class HSBPanel extends JPanel {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			Graphics2D display = (Graphics2D) g.create();
-			for (int j = 0; j < saurationMax; j++) {
+			for (int j = 0; j < saturationMax; j++) {
 				for (int i = 0; i < hueMax; i++) {
 					display.setPaint(new Color(Color.HSBtoRGB(i / hueMax,
-							1 - (j / saurationMax), 1.0f)));
+							1 - (j / saturationMax), 1.0f)));
 					display.fillRect(i, j, 1, 1);
 				}
 			}
 			display.setPaint(new Color(0, 0, 0));
 			display.drawOval((int) (hsb[0] * hueMax - 5),
-					(int) ((1.0f - hsb[1]) * saurationMax - 5), 10, 10);
+					(int) ((1.0f - hsb[1]) * saturationMax - 5), 10, 10);
 			display.drawOval((int) (hsb[0] * hueMax - 6),
-					(int) ((1.0f - hsb[1]) * saurationMax - 6), 12, 12);
+					(int) ((1.0f - hsb[1]) * saturationMax - 6), 12, 12);
 			display.dispose();
 		}
 
@@ -124,7 +107,7 @@ public class HSBPanel extends JPanel {
 				if (y < 0) {
 					hsb[1] = 1.0f;
 				} else if (0 <= y && y < Height + 1) {
-					hsb[1] = 1.0f - y / saurationMax;
+					hsb[1] = 1.0f - y / saturationMax;
 				} else if (Height + 1 <= y) {
 					hsb[1] = 0.0f;
 				}
@@ -146,7 +129,7 @@ public class HSBPanel extends JPanel {
 				if (y < 0) {
 					hsb[1] = 1.0f;
 				} else if (0 <= y && y < Height + 1) {
-					hsb[1] = 1.0f - y / saurationMax;
+					hsb[1] = 1.0f - y / saturationMax;
 				} else if (Height + 1 <= y) {
 					hsb[1] = 0.0f;
 				}

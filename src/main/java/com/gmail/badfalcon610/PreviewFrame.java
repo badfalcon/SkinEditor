@@ -21,7 +21,7 @@ public class PreviewFrame extends JFrame implements WindowStateListener {
 		maximized = false;
 		setTitle("Preview");
 		setIconImage(Toolkit.getDefaultToolkit().getImage(
-				getClass().getResource(SkinEditor.iconPass)));
+				getClass().getResource(SkinEditor.ICON_PATH)));
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new CloseListener());
 		addWindowStateListener(this);
@@ -55,23 +55,17 @@ public class PreviewFrame extends JFrame implements WindowStateListener {
 
 	public class CloseListener extends WindowAdapter {
 		public void windowClosing(WindowEvent e) {
-			U.say("aaaa");
 			SkinEditor.displayItemList[1].doClick();
-		}
-
-		public void windowClosed(WindowEvent e) {
-			U.say("bbbb");
 		}
 	}
 
 	@Override
 	public void windowStateChanged(WindowEvent e) {
-		U.say(e.getNewState());
 		SkinEditor.configuration.setProperty("previewmaximized",
-				String.valueOf(e.getNewState() == 6));
-		if (e.getNewState() == 6) {
+				String.valueOf(e.getNewState() == MAXIMIZED_BOTH));
+		if (e.getNewState() == MAXIMIZED_BOTH) {
 			maximized = true;
-		} else if (e.getNewState() == 0) {
+		} else if (e.getNewState() == NORMAL) {
 			maximized = false;
 		}
 	}

@@ -38,16 +38,13 @@ import javax.swing.undo.UndoManager;
 
 public class Canvas extends JPanel implements ComponentListener {
 
-	/*
-	 * public static void main(String[] args) { //new TestFrame(new Canvas());
-	 * new SkinEditor(); }
-	 */
+	/** Fully transparent ARGB value used when erasing pixels. */
+	static final int TRANSPARENT = 0;
 
 	Color backgroundcolor;
 	Color foregroundcolor;
 
 	static Point mousecurrent;
-	static Point mouseprevious;
 	static Point start;
 	static Point finish;
 	static Point dotcurrent;
@@ -55,7 +52,6 @@ public class Canvas extends JPanel implements ComponentListener {
 
 	BufferedImage layer1;
 	static BufferedImage selectedImage;
-	static BufferedImage copyOfSource;
 	static BufferedImage change;
 	static BufferedImage pasteImage;
 
@@ -71,10 +67,7 @@ public class Canvas extends JPanel implements ComponentListener {
 	static boolean entered;
 	static boolean selected;
 	static boolean pressed;
-	static boolean released;
-	static boolean inside;
 	boolean changed;
-	static boolean selectedinside;
 	static boolean grab;
 	static boolean grabbing;
 	static boolean release;
@@ -102,13 +95,9 @@ public class Canvas extends JPanel implements ComponentListener {
 	int shapeWidth;
 	int shapeHeight;
 
-	boolean debug;
-
 	static Clipboard cb;
 
 	public Canvas() {
-		debug = true;
-
 		scale = 10;
 		dotheight = 64;
 		selected = false;
@@ -129,7 +118,6 @@ public class Canvas extends JPanel implements ComponentListener {
 		addMouseWheelListener(ml);
 
 		mousecurrent = new Point(0, 0);
-		mouseprevious = new Point(0, 0);
 		start = new Point(-1, -1);
 		finish = new Point(0, 0);
 		dotcurrent = new Point(0, 0);
@@ -234,8 +222,7 @@ public class Canvas extends JPanel implements ComponentListener {
 					if (dotprevious.x != -1 && dotprevious.y != -1) {
 						clearLine(change, dotprevious.x, dotprevious.y,
 								dotcurrent.x, dotcurrent.y);
-					} else if (change.getRGB(dotcurrent.x, dotcurrent.y) != IU
-							.argb(0, 0, 0, 0)) {
+					} else if (change.getRGB(dotcurrent.x, dotcurrent.y) != TRANSPARENT) {
 						clearLine(change, dotcurrent.x, dotcurrent.y,
 								dotcurrent.x, dotcurrent.y);
 					}
@@ -578,24 +565,24 @@ public class Canvas extends JPanel implements ComponentListener {
 			if (Math.signum(y2 - y1) == -1) {
 				for (int y = y1; y >= y2; y += Math.signum(y2 - y1)) {
 					int x = (x2 - x1) * (y - y1) / (y2 - y1) + x1;
-					image.setRGB(x, y, IU.argb(0, 0, 0, 0));
+					image.setRGB(x, y, TRANSPARENT);
 				}
 			} else {
 				for (int y = y1; y <= y2; y += Math.signum(y2 - y1)) {
 					int x = (x2 - x1) * (y - y1) / (y2 - y1) + x1;
-					image.setRGB(x, y, IU.argb(0, 0, 0, 0));
+					image.setRGB(x, y, TRANSPARENT);
 				}
 			}
 		} else {
 			if (Math.signum(x2 - x1) == -1) {
 				for (int x = x1; x >= x2; x += Math.signum(x2 - x1)) {
 					int y = (y2 - y1) * (x - x1) / (x2 - x1) + y1;
-					image.setRGB(x, y, IU.argb(0, 0, 0, 0));
+					image.setRGB(x, y, TRANSPARENT);
 				}
 			} else {
 				for (int x = x1; x <= x2; x += Math.signum(x2 - x1)) {
 					int y = (y2 - y1) * (x - x1) / (x2 - x1) + y1;
-					image.setRGB(x, y, IU.argb(0, 0, 0, 0));
+					image.setRGB(x, y, TRANSPARENT);
 				}
 			}
 		}
@@ -677,7 +664,6 @@ public class Canvas extends JPanel implements ComponentListener {
 
 		public void mousePressed(MouseEvent e) {
 
-			// copyOfSource = deepCopy(SkinEditor.source);
 			pressed = true;
 
 			dotprevious.x = -1;
@@ -748,9 +734,6 @@ public class Canvas extends JPanel implements ComponentListener {
 
 		public void mouseDragged(MouseEvent e) {
 
-			mouseprevious.x = mousecurrent.x;
-			mouseprevious.y = mousecurrent.y;
-
 			boolean moved = false;
 			if (updateMousePlace(e)) {
 				moved = true;
@@ -803,9 +786,6 @@ public class Canvas extends JPanel implements ComponentListener {
 		}
 
 		public void mouseReleased(MouseEvent e) {
-
-			mouseprevious.x = mousecurrent.x;
-			mouseprevious.y = mousecurrent.y;
 
 			if (updateMousePlace(e)) {
 				dotprevious.x = dotcurrent.x;
@@ -918,14 +898,6 @@ public class Canvas extends JPanel implements ComponentListener {
 			}
 		}
 
-		public void mouseEntered(MouseEvent e) {
-			inside = true;
-		}
-
-		public void mouseExited(MouseEvent e) {
-			inside = false;
-		}
-
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			if (SkinEditor.tool + e.getWheelRotation() >= 0
 					&& SkinEditor.tool + e.getWheelRotation() < SkinEditor.togglebuttons.length) {
@@ -938,35 +910,16 @@ public class Canvas extends JPanel implements ComponentListener {
 
 	}
 
-	public void getChanges(BufferedImage b, BufferedImage a,
-			ArrayList<unit> unitsb, ArrayList<unit> unitsa) {
-		unitsb = new ArrayList<unit>();
-		unitsa = new ArrayList<unit>();
-		for (int i = 0; i < 64; i++) {
-			for (int j = 0; j < 64; j++) {
-				int rgbold = b.getRGB(j, i);
-				int rgbnew = a.getRGB(j, i);
-				Color colorold = new Color(rgbold, true);
-				Color colornew = new Color(rgbnew, true);
-				if (!colorold.equals(colornew)) {
-					unitsb.add(new unit(j, i, rgbold));
-					unitsa.add(new unit(j, i, rgbnew));
-				}
-			}
-		}
-	}
-
 	public Changes getChangesA(BufferedImage a) {
-		ArrayList<unit> unitsb = new ArrayList<unit>();
-		ArrayList<unit> unitsa = new ArrayList<unit>();
+		ArrayList<PixelChange> unitsb = new ArrayList<>();
+		ArrayList<PixelChange> unitsa = new ArrayList<>();
 		for (int i = 0; i < 64; i++) {
 			for (int j = 0; j < 64; j++) {
 				int rgbold = SkinEditor.source.getRGB(j, i);
 				int rgbnew = a.getRGB(j, i);
-				// U.say("old" + rgbold + ":new" + rgbnew);
 				if (rgbold != rgbnew) {
-					unitsb.add(new unit(j, i, rgbold));
-					unitsa.add(new unit(j, i, rgbnew));
+					unitsb.add(new PixelChange(j, i, rgbold));
+					unitsa.add(new PixelChange(j, i, rgbnew));
 				}
 			}
 		}
@@ -974,10 +927,10 @@ public class Canvas extends JPanel implements ComponentListener {
 	}
 
 	public class Changes {
-		ArrayList<unit> unitsold = new ArrayList<unit>();
-		ArrayList<unit> unitsnew = new ArrayList<unit>();
+		final List<PixelChange> unitsold;
+		final List<PixelChange> unitsnew;
 
-		public Changes(ArrayList<unit> unitsb, ArrayList<unit> unitsa) {
+		public Changes(List<PixelChange> unitsb, List<PixelChange> unitsa) {
 			unitsold = unitsb;
 			unitsnew = unitsa;
 		}
@@ -1056,17 +1009,15 @@ public class Canvas extends JPanel implements ComponentListener {
 		}
 	}
 
-	static int[][] changes;
-
-	public List<unit> getChangesNew(BufferedImage b, BufferedImage a) {
-		List<unit> u = new ArrayList<unit>();
+	public List<PixelChange> getChangesNew(BufferedImage b, BufferedImage a) {
+		List<PixelChange> u = new ArrayList<>();
 		for (int i = 0; i < 64; i++) {
 			for (int j = 0; j < 64; j++) {
 				int rgb = a.getRGB(j, i);
 				Color rgbb = new Color(b.getRGB(j, i), true);
 				Color rgba = new Color(rgb, true);
 				if (!rgbb.equals(rgba)) {
-					u.add(new unit(j, i, rgb));
+					u.add(new PixelChange(j, i, rgb));
 				}
 			}
 		}
@@ -1081,33 +1032,17 @@ public class Canvas extends JPanel implements ComponentListener {
 		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 
-	BufferedImage deepCopy0(BufferedImage bi) {
-		ColorModel cm = bi.getColorModel();
-		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		WritableRaster raster = bi.copyData(null);
-		return new BufferedImage(cm, raster, isAlphaPremultiplied, null)
-				.getSubimage(0, 0, bi.getWidth(), bi.getHeight());
-	}
-
-	BufferedImage deepCopy1(BufferedImage bi) {
-		ColorModel cm = bi.getColorModel();
-		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		WritableRaster raster = bi.copyData(null);
-		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-	}
-
 	public void initUndo() {
 		undoManager = new UndoManager();
 	}
 
 	class SetValueUndo extends AbstractUndoableEdit {
-		List<unit> oldValues;
-		List<unit> newValues;
+		List<PixelChange> oldValues;
+		List<PixelChange> newValues;
 
 		int num;
 
-		/** コンストラクター */
-		protected SetValueUndo(List<unit> before, List<unit> after, int n) {
+		protected SetValueUndo(List<PixelChange> before, List<PixelChange> after, int n) {
 			oldValues = before;
 			newValues = after;
 
@@ -1235,7 +1170,7 @@ public class Canvas extends JPanel implements ComponentListener {
 			int height) throws ArrayIndexOutOfBoundsException {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				source.setRGB(x1 + i, y1 + j, IU.argb(0, 0, 0, 0));
+				source.setRGB(x1 + i, y1 + j, TRANSPARENT);
 			}
 		}
 	}

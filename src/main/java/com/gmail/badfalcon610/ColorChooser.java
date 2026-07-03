@@ -18,22 +18,12 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 public class ColorChooser extends JPanel implements ActionListener {
-	public static void main(String[] args) {
-		JPanel panel = new JPanel();
-		ColorChooser t = new ColorChooser();
-		panel.add(t);
-		new TestFrame(panel);
-		t.addToHistory(Color.RED);
-	}
 
 	private static Color colormain;
 	private Color colorsub;
@@ -53,19 +43,6 @@ public class ColorChooser extends JPanel implements ActionListener {
 	private static RGBPanel rgbpanel;
 
 	public ColorChooser() {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException e) {
-			//
-		} catch (InstantiationException e) {
-			//
-		} catch (IllegalAccessException e) {
-			//
-		} catch (UnsupportedLookAndFeelException e) {
-			//
-		}
-		SwingUtilities.updateComponentTreeUI(this);
-
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setFocusable(false);
 
