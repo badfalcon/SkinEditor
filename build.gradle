@@ -1,45 +1,59 @@
-group 'net.badfalcon'
-version '1.0d'
+plugins {
+    id 'java'
+    id 'application'
+}
 
-apply plugin: "java"
-apply plugin: "application"
+group = 'net.badfalcon'
+version = '1.1.0'
 
-mainClassName = "com.gmail.badfalcon610.SkinEditor"
+application {
+    mainClass = 'com.gmail.badfalcon610.SkinEditor'
+}
 
 repositories {
     mavenCentral()
+    // JogAmp stopped publishing to Maven Central after 2.3.2;
+    // newer JOGL releases (with e.g. Apple Silicon natives) live here.
+    maven {
+        url = 'https://jogamp.org/deployment/maven/'
+    }
 }
 
-sourceCompatibility = 1.8
+ext {
+    joglVersion = '2.5.0'
+}
+
+dependencies {
+    implementation "org.jogamp.gluegen:gluegen-rt-main:${joglVersion}"
+    implementation "org.jogamp.jogl:jogl-all-main:${joglVersion}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // Build with any JDK 17+, produce Java 17 compatible bytecode
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.gmail.badfalcon610.SkinEditor'
+        attributes 'Main-Class': application.mainClass
     }
 
+    // Bundle all runtime dependencies (JOGL + natives) into a single runnable jar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
-dependencies {
-    implementation fileTree(dir: 'jogl', include: ['*.jar'])
-    runtimeOnly fileTree(dir: 'jogl/natives', include: ['*.jar'])
-}
-
 defaultTasks 'clean', 'build'
 
-// (1) zip 化タスクの定義
-task zipApp(type: Zip, dependsOn: jar) {
-    // zip ファイル名の変更
-    archiveFileName  = "${archiveBaseName.get()}${archiveVersion.get()}.${archiveExtension.get()}"
+tasks.register('zipApp', Zip) {
+    dependsOn jar
+    archiveFileName = "${project.name}${project.version}.zip"
 
     from jar
-
     from 'SkinEditor_License.txt'
 }
 
-// (2)
-artifacts {
-    archives zipApp
-}
+build.dependsOn 'zipApp'

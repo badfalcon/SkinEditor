@@ -156,3 +156,6 @@ gradle-app.setting
 
 # Project Specific ignore list
 SkinEditor.properties
+
+# SkinEditor runtime settings (written next to the app on exit)
+SkinEditor.properties
